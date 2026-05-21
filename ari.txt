@@ -1,0 +1,86 @@
+tempon(IN:=NOT apagado,PT:=T#1S);
+power :=tempon.Q;
+
+IF power = TRUE THEN
+      
+      IF inicio = FALSE AND atras1 = TRUE AND ocupado = FALSE THEN
+            avanzar := TRUE;
+      END_IF
+      
+      IF fin1 = FALSE AND inicio = TRUE  THEN
+            parar1 := TRUE;
+            ocupado := TRUE;
+      END_IF
+      
+      tempext1(IN := parar1 AND NOT frente1, PT:= T#2S);
+      extender1 := tempext1.Q;
+      
+      IF atras1 = FALSE THEN
+            avanzar := FALSE;
+      END_IF
+      
+      IF tempext1.Q = TRUE THEN
+            cintafresa := TRUE;
+            cintaladro := TRUE;
+      END_IF
+      
+      IF entaladro = FALSE THEN
+            cintafresa := FALSE;
+            cintaladro := FALSE;
+            taladrar := TRUE;
+      END_IF
+      
+      tempfresa(IN := taladrar, PT:= T#3S);
+      IF tempfresa.Q = TRUE THEN
+            taladrar := FALSE;
+            cintaladro := TRUE;
+            cintafresa := TRUE;
+            parar2 := TRUE;
+      END_IF
+      
+      //IF entaladro = FALSE THEN
+            //parar2 := TRUE;
+      //END_IF
+      
+      tempext2(IN := parar2, PT:= T#2S);
+      extender2 := tempext2.Q;
+      
+      IF frente2 = TRUE THEN
+            parar2 := FALSE;
+            extender2 := FALSE;
+            retraer2:= TRUE;
+            salir := TRUE;
+      END_IF
+      
+      IF atras2 = TRUE THEN
+            retraer2 := FALSE;
+      END_IF
+      
+      IF    atras2 = FALSE THEN
+            cintaladro := FALSE;
+            cintafresa := FALSE;
+            ocupado := FALSE;
+      END_IF
+      
+      IF fin2 = FALSE THEN
+            parar3 := TRUE;
+      END_IF
+      
+      tempfin(IN := parar3, PT:=T#1S);
+      
+      IF tempfin.Q = TRUE THEN
+            parar3 := FALSE;
+            salir := FALSE;
+      END_IF
+      
+      IF frente1 = TRUE THEN
+            parar1 := FALSE;
+            extender1 := FALSE;
+            retraer1:= TRUE;
+      END_IF
+      
+      IF atras1 = TRUE THEN
+            retraer1 := False;
+      END_IF
+
+END_IF
