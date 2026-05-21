@@ -81,7 +81,8 @@ import numpy as np
 def prepare(sdl):
     """Se ejecuta UNA VEZ al cargar el proyecto. Configura widgets y precarga modelos."""
     # Configurar etiquetas y valores iniciales de los widgets que uses
-    sdl.widget("counter1").label("Penalizacion movil").value(35).show()
+    sdl.widget("counter1").label("Penalizacion movil").value(10).show()
+    #el valor depende de las personas que hayan, si hay muchas el valor tiene que ser más bajo
     sdl.widget("slider1").label("Umbral baja atencion").value(50).show()
     sdl.widget("led1").label("Baja atencion").show()
     sdl.widget("text1").label("Indice atencion").show()
@@ -94,16 +95,16 @@ def prepare(sdl):
     sdl.widget("text1").label("Estado")
     sdl.widget("text_input1").label("Buscar objeto")
     # Ocultar los widgets que no uses en este proyecto
-    # sdl.widget("toggle2").hide()
-    # sdl.widget("counter2").hide()
-    # sdl.widget("led2").hide()
-    # sdl.widget("led3").hide()
-    # sdl.widget("text2").hide()
-    # sdl.widget("text_input2").hide()
-    # sdl.widget("file1").hide()
-    # sdl.widget("file2").hide()
-    # sdl.widget("select1").hide()
-    # sdl.widget("select2").hide()
+    sdl.widget("toggle2").hide()
+    sdl.widget("counter2").hide()
+    sdl.widget("led2").hide()
+    sdl.widget("led3").hide()
+    sdl.widget("text2").hide()
+    sdl.widget("text_input2").hide()
+    sdl.widget("file1").hide()
+    sdl.widget("file2").hide()
+    sdl.widget("select1").hide()
+    sdl.widget("select2").hide()
     # Para volver a mostrar: sdl.widget("toggle2").show()
     # Asociar un fichero al widget file_view
     # sdl.widget("file1").label("Mi log").file(sdl.data_dir + "/datos.csv")
@@ -137,11 +138,14 @@ def process(frame, sdl):
 
     # Leer widgets
     activo = sdl.widget("toggle1").value
-    umbral = sdl.widget("counter1").value
+    umbral_baja = float(sdl.widget("counter1").value)
     # texto_buscado = str(sdl.widget("text_input1").value)  # entrada de texto del alumno
 
     if not activo:
         sdl.draw_text(img, "Sistema pausado", (10, 30), color=(100,100,100))
+        sdl.widget("text1").value("Pausado")
+        sdl.widget("text2").value("Sistema inactivo")
+        sdl.widget("led1").value(False)
         return img
 
     # --- Ejemplo: detección de objetos ---
@@ -164,5 +168,42 @@ def process(frame, sdl):
     # sdl.draw_text(img, f"Tiempo: {sdl.elapsed():.1f}s  Frame: {sdl.frame_count}", (10, 30))
 
     # --- Tu código aquí ---
+
+    # Inferencias
+    res_tracking = sdl.infer("tracking", frame)
+    res_faces = sdl.infer("face", frame)
+    res_objetos = sdl.infer("yolo_detect", frame)
+    res_hands = sdl.infer("hands_yolo", frame)
+
+    #obtengo las personas totales, sus caras y los objetos de la grabación
+    personas = obtener_personas_tracking(res_tracking)
+    caras= res_faces.get("faces", [])
+    objetos = res_objetos.get("detections", [])
+    
+    #de esos objetos hay que identificar cuales que son móviles
+    moviles = [
+        d for d in objetos
+        if d["class"] in ["cell phone", "phone", "mobile phone"]
+    ]
+
+    #manos detectadas
+    manos = res_hands.get("hands", [])
+
+    #contamos las personas y las caras
+    n_personas = len(personas)
+    n_caras = len(caras)
+
+    #que gente está mirando a otro lado
+    personas_sin_cara= max(0, n_personas - n_caras)
+
+    #que móviles están cerca de una mano llamo al método contar_moviles_en_mano
+    moviles_en_mano = contar_moviles_en_mano(moviles, manos)
+
+    #para las distracciones graves queremos hacer personas con móvil cerca en la mano y que no este mirando hacia delante
+    distracciones_graves = min()
+    
+
+    
+
 
     return img
