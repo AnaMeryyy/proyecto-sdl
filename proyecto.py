@@ -193,14 +193,23 @@ def process(frame, sdl):
     n_personas = len(personas)
     n_caras = len(caras)
 
-    #que gente está mirando a otro lado
+    #que gente está mirando a otro lado = distracción leve
     personas_sin_cara= max(0, n_personas - n_caras)
 
     #que móviles están cerca de una mano llamo al método contar_moviles_en_mano
     moviles_en_mano = contar_moviles_en_mano(moviles, manos)
 
     #para las distracciones graves queremos hacer personas con móvil cerca en la mano y que no este mirando hacia delante
-    distracciones_graves = min()
+    distracciones_graves = contar_distracciones_graves(personas, caras, moviles, manos)
+
+    # Fórmula de atención
+    if n_personas == 0:
+        indice = 0
+    else:
+        indice = 100 * n_caras / n_personas
+        indice -= penalizacion_movil * distracciones_graves
+        indice = max(0, min(100, indice))
+    
     
 
     
